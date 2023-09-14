@@ -6,7 +6,7 @@ dotenv.config({path:path.join(__dirname,"config/config.env")});
 
 
 // import the required routes
-const projects = require('./routes/projects')
+const projects = require('./routes/project')
 
 
 // Configure a routes
