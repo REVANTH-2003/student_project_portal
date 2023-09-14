@@ -1,3 +1,6 @@
+const Project = require('../models/projectModel');
+
+
 exports.getProjects = (req,res,next)=>
 {
     res.status(200).json({
