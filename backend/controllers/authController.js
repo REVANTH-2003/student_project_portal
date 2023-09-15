@@ -142,9 +142,8 @@ exports.resetPassword = catchAsyncError( async (req, res, next) => {
 
 })
 
-/*
 
-//Get User Profile - /api/v1/myprofile
+//Get User Profile - /api/auth/myprofile
 exports.getUserProfile = catchAsyncError(async (req, res, next) => {
    const user = await User.findById(req.user.id)
    res.status(200).json({
@@ -153,7 +152,7 @@ exports.getUserProfile = catchAsyncError(async (req, res, next) => {
    })
 })
 
-//Change Password  - api/v1/password/change
+//Change Password  - api/auth/password/change
 exports.changePassword  = catchAsyncError(async (req, res, next) => {
     const user = await User.findById(req.user.id).select('+password');
     //check old password
@@ -166,16 +165,17 @@ exports.changePassword  = catchAsyncError(async (req, res, next) => {
     await user.save();
     res.status(200).json({
         success:true,
+        reqbody:req.body
     })
  })
 
-//Update Profile - /api/v1/update
+//Update Profile - /api/auth/update
 exports.updateProfile = catchAsyncError(async (req, res, next) => {
     let newUserData = {
-        name: req.body.name,
-        email: req.body.email
+        ...req.body
     }
 
+    /* 
     let avatar;
     let BASE_URL = process.env.BACKEND_URL;
     if(process.env.NODE_ENV === "production"){
@@ -186,6 +186,7 @@ exports.updateProfile = catchAsyncError(async (req, res, next) => {
         avatar = `${BASE_URL}/uploads/user/${req.file.originalname}`
         newUserData = {...newUserData,avatar }
     }
+    */
 
     const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
         new: true,
@@ -200,7 +201,7 @@ exports.updateProfile = catchAsyncError(async (req, res, next) => {
 })
 
 
-//Admin: Get All Users - /api/v1/admin/users
+//Admin: Get All Users - /api/auth/admin/users
 exports.getAllUsers = catchAsyncError(async (req, res, next) => {
    const users = await User.find();
    res.status(200).json({
@@ -209,7 +210,7 @@ exports.getAllUsers = catchAsyncError(async (req, res, next) => {
    })
 })
 
-//Admin: Get Specific User - api/v1/admin/user/:id
+//Admin: Get Specific User - api/auth/admin/user/:id
 exports.getUser = catchAsyncError(async (req, res, next) => {
     const user = await User.findById(req.params.id);
     if(!user) {
@@ -221,12 +222,10 @@ exports.getUser = catchAsyncError(async (req, res, next) => {
    })
 });
 
-//Admin: Update User - api/v1/admin/user/:id
+//Admin: Update User - api/auth/admin/user/:id
 exports.updateUser = catchAsyncError(async (req, res, next) => {
     const newUserData = {
-        name: req.body.name,
-        email: req.body.email,
-        role: req.body.role
+        ...req.body
     }
 
     const user = await User.findByIdAndUpdate(req.params.id, newUserData, {
@@ -240,15 +239,15 @@ exports.updateUser = catchAsyncError(async (req, res, next) => {
     })
 })
 
-//Admin: Delete User - api/v1/admin/user/:id
+
+//Admin: Delete User - api/auth/admin/user/:id
 exports.deleteUser = catchAsyncError(async (req, res, next) => {
     const user = await User.findById(req.params.id);
     if(!user) {
         return next(new ErrorHandler(`User not found with this id ${req.params.id}`))
     }
-    await user.remove();
+    await user.deleteOne({ _id: req.params.id });
     res.status(200).json({
         success: true,
     })
-}) 
-*/
+})
