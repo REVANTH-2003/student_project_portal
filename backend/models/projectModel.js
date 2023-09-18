@@ -3,9 +3,13 @@ const mongoose = require('mongoose');
 // Define the Project schema
 const projectSchema = new mongoose.Schema({
   
-    title: {
+  title: {
     type: String,
     required: [true, 'Please enter your project title']
+  },
+
+  user: {
+    type : mongoose.Schema.Types.ObjectId
   },
 
   description: {
@@ -29,15 +33,26 @@ const projectSchema = new mongoose.Schema({
 
   projectFiles: {
     type: String,
-    required: [true, 'Please enter your major']
+    required: [true, 'Please select your project file']
   },
 
   comments: [
     {
-      name: String,
-      time: Date,
-      comment: String,
-    },
+      user:{
+                type:mongoose.Schema.Types.ObjectId,
+                ref: 'User'
+            },
+      time: 
+      { 
+        type : Date,
+        default: Date.now
+      }
+      ,
+      comment: {
+        type: String,
+        required: true
+    }
+    }
   ],
 
   likes: {
@@ -48,6 +63,7 @@ const projectSchema = new mongoose.Schema({
   projectDocumentation: String,
   projectURL: String,
   projectImage: String,
+  collegeName: String,
   
 });
 

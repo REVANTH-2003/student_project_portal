@@ -4,10 +4,12 @@ const errorMiddleware = require('./middlewares/error');
 const cookieParser = require('cookie-parser')
 const path = require('path')
 const dotenv = require('dotenv');
+const bodyParser = require('body-parser');
 dotenv.config({path:path.join(__dirname,"config/config.env")});
 
 
 app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 
@@ -17,8 +19,8 @@ const auth = require('./routes/auth')
 
 
 // Configure a routes
-app.use('/api/', projects);
-app.use('/api/auth/',auth);
+app.use('', projects);
+app.use('/auth/',auth);
 
 
 
