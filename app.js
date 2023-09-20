@@ -8,6 +8,9 @@ const bodyParser = require('body-parser');
 dotenv.config({path:path.join(__dirname,"config/config.env")});
 
 
+app.set('views',path.join(__dirname, "views" ));
+app.set('view engine',"ejs");
+
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());

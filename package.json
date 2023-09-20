@@ -4,6 +4,7 @@
     "cookie-parser": "^1.4.6",
     "crypto": "^1.0.1",
     "dotenv": "^16.3.1",
+    "ejs": "^3.1.9",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.5.0",
@@ -19,9 +20,9 @@
     "nodemon": "^3.0.1"
   },
   "scripts": {
-    "start": "nodemon backend/server.js",
-    "dev": "set NODE_ENV=development && nodemon backend/server.js",
-    "prod": "set NODE_ENV=production && nodemon backend/server.js"
+    "start": "nodemon server.js",
+    "dev": "set NODE_ENV=development && nodemon server.js",
+    "prod": "set NODE_ENV=production && nodemon server.js"
   },
   "author": "S.Revanthramesh",
   "license": "ISC"

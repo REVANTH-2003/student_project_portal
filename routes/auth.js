@@ -3,7 +3,6 @@ const path = require('path')
 const router = express.Router();
 const { isAuthenticatedUser, authorizeRoles } = require('../middlewares/authenticate')
 
-/*
 const multer = require('multer');
 const upload = multer({storage: multer.diskStorage({
     destination: function(req, file, cb) {
@@ -13,7 +12,7 @@ const upload = multer({storage: multer.diskStorage({
         cb(null, file.originalname)
     }
 }) }) 
-*/
+
 
 const { 
     registerUser,
@@ -39,7 +38,7 @@ router.route('/password/forgot').post(forgotPassword);
 router.route('/password/reset/:token').put(resetPassword);
 router.route('/password/change').put(isAuthenticatedUser, changePassword);
 router.route('/myprofile').get(isAuthenticatedUser, getUserProfile);
-router.route('/update').put(isAuthenticatedUser, updateProfile); // upload.single('avatar')
+router.route('/update').put(isAuthenticatedUser, upload.single('profile'), updateProfile); 
 
 
 //Admin routes

@@ -175,18 +175,16 @@ exports.updateProfile = catchAsyncError(async (req, res, next) => {
         ...req.body
     }
 
-    /* 
-    let avatar;
+    let profile;
     let BASE_URL = process.env.BACKEND_URL;
     if(process.env.NODE_ENV === "production"){
         BASE_URL = `${req.protocol}://${req.get('host')}`
     }
 
     if(req.file){
-        avatar = `${BASE_URL}/uploads/user/${req.file.originalname}`
-        newUserData = {...newUserData,avatar }
+        profile = `${BASE_URL}/uploads/user/${req.file.originalname}`
+        newUserData = {...newUserData, profile }
     }
-    */
 
     const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
         new: true,
