@@ -1,5 +1,5 @@
 const express = require('express');
-const { getProjects, newProject, getSingleProject, updateProject, deleteProject, createComment,deleteComment,updateComment } = require('../controllers/projectController');
+const { getProjects, newProject, getSingleProject, updateProject, deleteProject, createComment,deleteComment,updateComment, welcome } = require('../controllers/projectController');
 const router = express.Router();
 const {isAuthenticatedUser} = require('../middlewares/authenticate');
 const multer = require('multer');
@@ -29,7 +29,7 @@ const storage = multer.diskStorage({
   
 const upload = multer({ storage: storage });
 
-
+router.route('').get(welcome);
 router.route('/projects').get( getProjects);
 router.route('/project/:id').get(getSingleProject); 
 

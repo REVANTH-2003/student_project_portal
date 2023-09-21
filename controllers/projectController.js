@@ -5,6 +5,16 @@ const APIFeatures = require('../utils/apiFeatures');
 const User = require('../models/userModel');
 const mongoose = require('mongoose');
 
+
+// welcome page - /
+exports.welcome = catchAsyncError(async (req, res, next) => {
+    res.status(200).render('welcome'); }
+);
+
+exports.home = catchAsyncError(async (req, res, next) => {
+    res.status(200).render('home', ); }
+);
+
 //Get Projects - /projects
 exports.getProjects = catchAsyncError(async (req, res, next)=>{
     const resPerPage = 4;

@@ -6,7 +6,7 @@ const { isAuthenticatedUser, authorizeRoles } = require('../middlewares/authenti
 const multer = require('multer');
 const upload = multer({storage: multer.diskStorage({
     destination: function(req, file, cb) {
-        cb(null, path.join( __dirname,'..' , 'uploads/user' ) )
+        cb(null, path.join( __dirname,'..' , 'public/uploads/user' ))
     },
     filename: function(req, file, cb ) {
         cb(null, file.originalname)
@@ -26,19 +26,29 @@ const {
     getAllUsers,
     getUser,
     updateUser,
-    deleteUser
+    deleteUser,
  } = require('../controllers/authController');
 
 
-
-router.route('/register').post(registerUser);
-router.route('/login').post(loginUser);
+router.route('/register')
+    .get(registerUser)
+    .post(upload.single('profile'), registerUser);
+router.route('/login')
+    .get(loginUser)
+    .post(loginUser);
 router.route('/logout').get(logoutUser);
-router.route('/password/forgot').post(forgotPassword);
-router.route('/password/reset/:token').put(resetPassword);
+router.route('/password/forgot')
+    .get(forgotPassword)
+    .post(forgotPassword);
+router.route('/password/reset/:token')
+    .get(resetPassword)
+    .post(resetPassword)
+
 router.route('/password/change').put(isAuthenticatedUser, changePassword);
 router.route('/myprofile').get(isAuthenticatedUser, getUserProfile);
-router.route('/update').put(isAuthenticatedUser, upload.single('profile'), updateProfile); 
+router.route('/update')
+.post(isAuthenticatedUser, upload.single('profile'), updateProfile)
+.get(isAuthenticatedUser, updateProfile);
 
 
 //Admin routes

@@ -1,39 +1,81 @@
 const catchAsyncError = require('../middlewares/catchAsyncError');
+const Project = require('../models/projectModel');
 const User = require('../models/userModel');
 const sendEmail = require('../utils/email');
 const ErrorHandler = require('../utils/errorHandler');
 const sendToken = require('../utils/jwt');
 const crypto = require('crypto')
 
-//Register User - /api/auth/register
+const colleges = [
+    "Nadar Saraswathi college of engineering and technology",
+    "Government College of Engineering, Theni",
+    "Theni Kammavar Sangam College of Technology",
+    "Thiagarajar College of Engineering, Madurai",
+    "Madurai Institute of Engineering and Technology",
+    "Velammal College of Engineering and Technology, Madurai",
+    "Indian Institute of Technology Madras (IIT Madras)",
+    "College of Engineering, Guindy (CEG), Anna University, Chennai",
+    "Sri Sairam Engineering College, Chennai",
+    "SRM Institute of Science and Technology, Chennai",
+  ];
+  
+  const majors = [
+    "Civil Engineering",
+    "Mechanical Engineering",
+    "Electrical Engineering",
+    "Computer Science and Engineering",
+    "Chemical Engineering",
+    "Aerospace Engineering",
+    "Biomedical Engineering",
+    "Environmental Engineering",
+    "Industrial Engineering",
+    "Materials Engineering",
+    "Petroleum Engineering",
+    "Electronics Engineering",
+    "Software Engineering",
+    "Automotive Engineering",
+    "Telecommunication Engineering",
+  ];
+
+
+//Register User - /auth/register
 exports.registerUser = catchAsyncError(async (req, res, next) => {
-    const { name, email, password, collegeName, major } = req.body
 
-    /* let avatar;
-    
-    let BASE_URL = process.env.BACKEND_URL;
-    if(process.env.NODE_ENV === "production"){
-        BASE_URL = `${req.protocol}://${req.get('host')}`
+    if (req.method === 'GET') 
+    {
+        res.status(200).render('register',{colleges,majors});
     }
-
+    if (req.method === 'POST') 
+    {
+    const { name, email, password, collegeName, major } = req.body
+    let profile;
+    
     if(req.file){
-        avatar = `${BASE_URL}/uploads/user/${req.file.originalname}`
-    } */
-
+        profile = `/uploads/user/${req.file.originalname}`
+    }
     const user = await User.create({
         name,
         email,
         password,
         collegeName,
-        major
+        major,
+        profile
     });
 
-    sendToken(user, 201, res)
-
+    res.status(200).render('login');
+    }
 })
 
-//Login User - /api/auth/login
+//Login User - /auth/login
 exports.loginUser = catchAsyncError(async (req, res, next) => {
+
+    if (req.method === 'GET') 
+    {   
+        res.status(200).render('login'); 
+    }
+
+    if (req.method === 'POST') 
+    {
     const {email, password} =  req.body
 
     if(!email || !password) {
@@ -51,26 +93,32 @@ exports.loginUser = catchAsyncError(async (req, res, next) => {
         return next(new ErrorHandler('Invalid email or password', 401))
     }
 
-    sendToken(user, 201, res)
-    
+    const projects = await Project.find();
+    req.user = user;
+    const cookie = sendToken(user)
+    res.cookie('token', cookie.token, cookie.options).render('home', {user, projects });
+    }    
 })
 
-//Logout - /api/auth/logout
+//Logout - /auth/logout
 exports.logoutUser = (req, res, next) => {
         res.cookie('token', null, {
             expires: new Date(Date.now()),
             httpOnly: true
         })
-        .status(200)
-        .json({
-            success: true,
-            message: "Loggedout"
-        })
-
+        .status(200).render("login")
 }
 
-//Forgot Password - /api/auth/password/forgot
+//Forgot Password - /auth/password/forgot
 exports.forgotPassword = catchAsyncError( async (req, res, next)=>{
+
+    if (req.method === 'GET') 
+    {
+        res.status(200).render('forgot_password');
+    }
+
+    if (req.method === 'POST') 
+    {
     const user =  await User.findOne({email: req.body.email});
 
     if(!user) {
@@ -80,16 +128,10 @@ exports.forgotPassword = catchAsyncError( async (req, res, next)=>{
     const resetToken = user.getResetToken();
     await user.save({validateBeforeSave: false})
     
-    let BASE_URL = "http://127.0.0.1:8000/api/";
-     /*
-     if(process.env.NODE_ENV === "production"){
-        BASE_URL = `${req.protocol}://${req.get('host')}`
-    }
-    */
-
-
+    let BASE_URL = "http://127.0.0.1:8000";
+   
     //Create reset url
-    const resetUrl = `${BASE_URL}/password/reset/${resetToken}`;
+    const resetUrl = `${BASE_URL}/auth/password/reset/${resetToken}`;
 
     const message = `Your password reset url is as follows \n\n 
     ${resetUrl} \n\n If you have not requested this email, then ignore it.`;
@@ -101,49 +143,67 @@ exports.forgotPassword = catchAsyncError( async (req, res, next)=>{
             message
         })
 
-        res.status(200).json({
-            success: true,
-            message: `Email sent to ${user.email}`
-        })
+        res.status(200).render("welcome")
 
     }catch(error){
         user.resetPasswordToken = undefined;
         user.resetPasswordTokenExpire = undefined;
         await user.save({validateBeforeSave: false});
         return next(new ErrorHandler(error.message), 500)
-    }
+    }}
+}
+)  
 
-})  
-
-//Reset Password - /api/auth/password/reset/:token
+//reset password - /auth/password/reset/:token
 exports.resetPassword = catchAsyncError( async (req, res, next) => {
-   const resetPasswordToken =  crypto.createHash('sha256').update(req.params.token).digest('hex'); 
 
-    const user = await User.findOne( {
+    if (req.method === 'GET') 
+    {   
+        const resetPasswordToken =  crypto.createHash('sha256').update(req.params.token).digest('hex'); 
+
+        const user = await User.findOne( {
         resetPasswordToken,
         resetPasswordTokenExpire: {
             $gt : Date.now()
         }
-    } )
+        } )
 
-    if(!user) {
-        return next(new ErrorHandler('Password reset token is invalid or expired'));
+        if(!user) 
+        {
+            return next(new ErrorHandler('Password reset token is invalid or expired'));
+        }
+
+    res.status(200).render('reset_password', { 
+        token : req.params.token
+    }); 
     }
+    
+    if (req.method === 'POST') 
+    {   
+        const resetPasswordToken =  crypto.createHash('sha256').update(req.params.token).digest('hex'); 
 
-    if( req.body.password !== req.body.confirmPassword) {
-        return next(new ErrorHandler('Password does not match'));
+        const user = await User.findOne( {
+        resetPasswordToken,
+        resetPasswordTokenExpire: {
+            $gt : Date.now()
+        }
+        } )
+
+        if( req.body.password !== req.body.confirmPassword) {
+            return next(new ErrorHandler('Password does not match'));
+        }
+    
+        user.password = req.body.password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordTokenExpire = undefined;
+        await user.save({validateBeforeSave: false})
+        res.status(200).render('login');
     }
-
-    user.password = req.body.password;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordTokenExpire = undefined;
-    await user.save({validateBeforeSave: false})
-    sendToken(user, 201, res)
-
+   
 })
 
 
-//Get User Profile - /api/auth/myprofile
+//Get User Profile - /auth/myprofile
 exports.getUserProfile = catchAsyncError(async (req, res, next) => {
    const user = await User.findById(req.user.id)
    res.status(200).json({
@@ -169,35 +229,42 @@ exports.changePassword  = catchAsyncError(async (req, res, next) => {
     })
  })
 
-//Update Profile - /api/auth/update
+//Update Profile - /auth/update
 exports.updateProfile = catchAsyncError(async (req, res, next) => {
+
+    if (req.method === 'GET') 
+    {   
+        const user = await User.findById(req.user.id);
+        const dateObject = user.dob;
+        const year = dateObject.getFullYear();
+        const month = String(dateObject.getMonth() + 1).padStart(2, "0"); // Month is zero-based, so add 1
+        const day = String(dateObject.getDate()).padStart(2, "0");
+        const formattedDate = `${year}-${month}-${day}`;
+        res.status(200).render('update_profile', {user,date:formattedDate});
+        }
+
+    if (req.method === 'POST')
+    {
     let newUserData = {
         ...req.body
     }
-
+    console.log(newUserData, req.body);
     let profile;
-    let BASE_URL = process.env.BACKEND_URL;
-    if(process.env.NODE_ENV === "production"){
-        BASE_URL = `${req.protocol}://${req.get('host')}`
-    }
 
     if(req.file){
-        profile = `${BASE_URL}/uploads/user/${req.file.originalname}`
+        profile = `/uploads/user/${req.file.originalname}`
         newUserData = {...newUserData, profile }
     }
 
+    const projects = await Project.find();
     const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
         new: true,
         runValidators: true,
     })
 
-    res.status(200).json({
-        success: true,
-        user
-    })
+    res.status(200).render("home", {user, projects}) }
 
 })
-
 
 //Admin: Get All Users - /api/auth/admin/users
 exports.getAllUsers = catchAsyncError(async (req, res, next) => {
