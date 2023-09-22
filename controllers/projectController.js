@@ -36,6 +36,27 @@ const technology = [
     "Firebase",
     "Heroku",
   ];
+
+
+function addArraysWithoutDuplicates(arr1, arr2) {
+    // Concatenate the two arrays
+    const combinedArray = arr1.concat(arr2);
+  
+    // Create a new array to store unique values
+    const uniqueArray = [];
+  
+    // Iterate through the combined array
+    for (let i = 0; i < combinedArray.length; i++) {
+      // Check if the element is not already in the uniqueArray
+      if (!uniqueArray.includes(combinedArray[i])) {
+        // Add the element to the uniqueArray
+        uniqueArray.push(combinedArray[i]);
+      }
+    }
+  
+    return uniqueArray;
+  }
+  
   
 // welcome page - /
 exports.welcome = catchAsyncError(async (req, res, next) => {
@@ -127,35 +148,37 @@ exports.getSingleProject = catchAsyncError(async(req, res, next) => {
     res.status(201).render('project_details',{project, user});
 });
 
-//Update Project - /project/:id
-exports.updateProject = catchAsyncError(async (req, res, next) => {
-    let project = await Project.findById(req.params.id);
 
-    let BASE_URL = process.env.BACKEND_URL;
-    if(process.env.NODE_ENV === "production"){
-        BASE_URL = `${req.protocol}://${req.get('host')}`
+//Update Project - /project/update/:id
+exports.updateProject = catchAsyncError(async (req, res, next) => {
+    if (req.method === 'GET') 
+    {   
+        const project = await Project.findById(req.params.id);
+        res.status(200).render('edit_project',{technology, id:req.params.id,project});
     }
 
+    else{
+    let project = await Project.findById(req.params.id);
     if('projectImage' in req.files)
     {
-        let url = `${BASE_URL}/uploads/projects/image/${req.files['projectImage'][0].filename}`;
+        let url = `/uploads/projects/image/${req.files['projectImage'][0].filename}`;
         req.body.projectImage = url;
     }
     else
     {
-        let url = `${BASE_URL}/uploads/projects/image/default.jpg`;
+        let url = `/uploads/projects/image/default.jpg`;
         req.body.projectImage = url;  
     }
     
     if('projectDocumentation' in req.files)
     {
-        let url = `${BASE_URL}/uploads/projects/documentation/${req.files['projectDocumentation'][0].filename}`;
+        let url = `/uploads/projects/documentation/${req.files['projectDocumentation'][0].filename}`;
         req.body.projectDocumentation = url;
     }
     
     if('projectFiles' in req.files)
     {
-        let url = `${BASE_URL}/uploads/projects/file/${req.files['projectFiles'][0].filename}`;
+        let url = `/uploads/projects/file/${req.files['projectFiles'][0].filename}`;
         req.body.projectFiles = url;
     }
     
@@ -165,23 +188,24 @@ exports.updateProject = catchAsyncError(async (req, res, next) => {
             message: "Project not found"
         });
     }
+    const newArray = req.body.technologyUsed.slice(1);
+    req.body.technologyUsed = addArraysWithoutDuplicates(newArray, project.technologyUsed);
 
     project = await Project.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
         runValidators: true
     })
 
-    res.status(200).json({
-        success: true,
-        project
-    })
+    const user = await User.findById(project.user).populate('projects');
+    res.status(200).render('myprojects', {user:user, projects:user.projects});
+    }
 
-})
+});
 
 //Delete Project - /project/:id
 exports.deleteProject = catchAsyncError(async (req, res, next) =>{
     const project = await Project.findById(req.params.id);
-
+    const userid = project.user
     if(!project ) {
         return res.status(404).json({
             success: false,
@@ -197,7 +221,7 @@ exports.deleteProject = catchAsyncError(async (req, res, next) =>{
 
     await User.findByIdAndUpdate(req.user.id , { projects:array });
      
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(userid);
     const projects = await Project.find();
     
     res.status(200).render('home',{user,projects})
