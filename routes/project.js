@@ -1,5 +1,5 @@
 const express = require('express');
-const { getProjects, newProject, getSingleProject, updateProject, deleteProject, createComment,deleteComment,updateComment, welcome } = require('../controllers/projectController');
+const { getProjects, newProject, updateProject, deleteProject, createComment,deleteComment,updateComment, welcome, myProjects,getSingleProject } = require('../controllers/projectController');
 const router = express.Router();
 const {isAuthenticatedUser} = require('../middlewares/authenticate');
 const multer = require('multer');
@@ -11,13 +11,13 @@ const storage = multer.diskStorage({
       let destination;
       if (file.fieldname === 'projectDocumentation') 
       {
-        destination = path.join( __dirname,'..' , 'uploads/projects/documentation' );
+        destination = path.join( __dirname,'..' , 'public/uploads/projects/documentation' );
       } else if (file.fieldname === 'projectImage') 
       {
-        destination = path.join( __dirname,'..' , 'uploads/projects/image' );
+        destination = path.join( __dirname,'..' , 'public/uploads/projects/image' );
       } else if (file.fieldname === 'projectFiles') 
       {
-        destination = path.join( __dirname,'..' , 'uploads/projects/file' );
+        destination = path.join( __dirname,'..' , 'public/uploads/projects/file' );
       } 
       cb(null, destination);
     },
@@ -30,19 +30,27 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 router.route('').get(welcome);
-router.route('/projects').get( getProjects);
-router.route('/project/:id').get(getSingleProject); 
+router.route('/projects').get(getProjects);
 
-router.route('/project/new').post(isAuthenticatedUser, 
+
+router.route('/project/get/:id').get(getSingleProject); 
+
+router.route('/myprojects/:id').get(myProjects);
+
+router.route('/project/new')
+.get(isAuthenticatedUser, newProject)
+.post(isAuthenticatedUser, 
     upload.fields([
     { name: 'projectDocumentation', maxCount: 1 },
     { name: 'projectImage', maxCount: 1 },
     { name: 'projectFiles', maxCount: 1 },
     ]), newProject);
 
-router.route('/project/:id').delete(isAuthenticatedUser, deleteProject);
+router.route('/project/delete/:id').get(isAuthenticatedUser, deleteProject);
 
-router.route('/project/:id').put(isAuthenticatedUser,
+router.route('/project/update/:id')
+.get(isAuthenticatedUser, updateProject)
+.post(isAuthenticatedUser,
     upload.fields([
     { name: 'projectDocumentation', maxCount: 1 },
     { name: 'projectImage', maxCount: 1 },

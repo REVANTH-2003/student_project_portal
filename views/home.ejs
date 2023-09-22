@@ -37,6 +37,7 @@
 
   <!-- Template Main CSS File -->
   <link href="/assets/css/style.css" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/card.css">
 
   
 </head>
@@ -58,14 +59,12 @@
           <li><a class="nav-link scrollto" href="#team">Team</a></li>
           
           <li><a class="nav-link scrollto" href="#contact">Contact</a></li>
-          <li><a class="getstarted scrollto" href="#">Get Started</a></li>
-
           <li class="dropdown">
             <a href="#" data-toggle="dropdown" class="dropdown-toggle user-action"><img src="<%= user.profile %>" class="avatar" alt="Avatar"><%= user.name %></a>
             <ul class="dropdown-menu">
               <li><a href="/auth/update"><i class="fa fa-user-o"></i>Update Profile</a></li>
-              <li><a href="#"><i class="fas fa-tasks"></i> My Projects</a></li>
-              <li><a href="#"><i class="fa fa-upload"></i> Upload Project</a></li>
+              <li><a href="/myprojects/<%= user._id %>"><i class="fas fa-tasks"></i> My Projects</a></li>
+              <li><a href="/project/new"><i class="fa fa-upload"></i> Upload Project</a></li>
               <li class="divider"></li>
               <li><a href="/auth/logout"><i class="material-icons"></i> Logout</a></li>
             </ul>
@@ -90,7 +89,7 @@
           <h1>Connecting Minds, Building Futures </h1>
           <h2>Together, students can make a meaningful impact on their projects</h2>
           <div class="d-flex justify-content-center justify-content-lg-start">
-            <a href="#about" class="btn-get-started scrollto">Get Started</a>
+            <a href="#about" class="btn-get-started scrollto">Explore</a>
             
           </div>
         </div>
@@ -104,129 +103,36 @@
 
   <main id="main">
 
-   
-
-    <!-- ======= About Us Section ======= -->
-    <section id="about" class="about">
-      <div class="container" data-aos="fade-up">
-
-        <div class="section-title">
-          <h2>About Us</h2>
-        </div>
-
-        <div class="row content">
-          <div class="col-lg-6">
-            <p>
-              some functionalities for our online platform designed to facilitate student project collaboration
-            </p>
-            <ul>
-              <li><i class="ri-check-double-line"></i>  Knowledge Sharing Hub</li>
-              <li><i class="ri-check-double-line"></i> Cross-Institutional Collaboration</li>
-              <li><i class="ri-check-double-line"></i> Project Discovery</li>
-            </ul>
-          </div>
-          <div class="col-lg-6 pt-4 pt-lg-0">
-            <p>
-              Our online integrated platform is a dynamic solution designed to empower students from various universities and colleges by facilitating collaborative project initiatives. With the aim of enhancing the educational experience, our platform provides a seamless space for students to connect, collaborate, and succeed together.
-            </p>
-            <a href="#" class="btn-learn-more">Learn More</a>
-          </div>
-        </div>
-
-      </div>
-    </section><!-- End About Us Section -->
-
-    
-
-   
-
-    
-
-   
-    <!-- ======= Team Section ======= -->
-    <section id="team" class="team section-bg">
-      <div class="container" data-aos="fade-up">
-
-        <div class="section-title">
-          <h2>Team</h2>
-        </div>
-
-        <div class="row">
-
-          <div class="col-lg-6" data-aos="zoom-in" data-aos-delay="100">
-            <div class="member d-flex align-items-start">
-              <div class="pic"><img src="/assets/img/team/team-1.jpg" class="img-fluid" alt=""></div>
-              <div class="member-info">
-                <h4>REVANTHRAMEH S</h4>
-                <span>Backend Developer</span>
-                <p>&nbsp;</p>
-                <div class="social">
-                  <a href=""><i class="ri-twitter-fill"></i></a>
-                  <a href=""><i class="ri-facebook-fill"></i></a>
-                  <a href=""><i class="ri-instagram-fill"></i></a>
-                  <a href=""> <i class="ri-linkedin-box-fill"></i> </a>
-                </div>
-              </div>
+<!-- card -->
+<div class="card-container">
+  <div class="section-title">
+    <h2>Projects</h2>
+  </div>
+  <!-- Normal Demo-->
+  <div class="row">
+    <% for (var i = 0; i < projects.length;  i++ ) { %>
+      <div class="col-md-4">
+          <div class="post-module">
+            <!-- Thumbnail-->
+            <div class="thumbnail">
+              <img src="<%= projects[i].projectImage %>"/>
+            </div>
+            <!-- Post Content-->
+            <div class="post-content">
+              <div class="category"><%= projects[i].category %></div>
+              <a href="/project/get/<%= projects[i]._id %>"><h1 class="title"><%= projects[i].title %></h1></a>
+              <p class="description"><%= projects[i].description.slice(0,200) %>...</p>
+              <div class="post-meta"><span class="timestamp"><i class="fa fa-clock-">o</i>
+                  0 mins ago</span><span class="comments"><i class="fa fa-comments"></i><a href="#"><%= projects[i].comments.length %> comments</a></span></div>
+                  <p>&nbsp;</p>
             </div>
           </div>
-
-          <div class="col-lg-6 mt-4 mt-lg-0" data-aos="zoom-in" data-aos-delay="200">
-            <div class="member d-flex align-items-start">
-              <div class="pic"><img src="/assets/img/team/team-1.jpg" class="img-fluid" alt=""></div>
-              <div class="member-info">
-                <h4>RAJAPANDIAN P</h4>
-                <span>Frontend Developer</span>
-                <p>&nbsp;</p>
-                <div class="social">
-                  <a href=""><i class="ri-twitter-fill"></i></a>
-                  <a href=""><i class="ri-facebook-fill"></i></a>
-                  <a href=""><i class="ri-instagram-fill"></i></a>
-                  <a href=""> <i class="ri-linkedin-box-fill"></i> </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-6 mt-4" data-aos="zoom-in" data-aos-delay="300">
-            <div class="member d-flex align-items-start">
-              <div class="pic"><img src="/assets/img/team/team-3.jpg" class="img-fluid" alt=""></div>
-              <div class="member-info">
-                <h4>ARJUN YUVANESH R</h4>
-                <span>Frontend Developer</span>
-                <p>&nbsp;</p>
-                <div class="social">
-                  <a href=""><i class="ri-twitter-fill"></i></a>
-                  <a href=""><i class="ri-facebook-fill"></i></a>
-                  <a href=""><i class="ri-instagram-fill"></i></a>
-                  <a href=""> <i class="ri-linkedin-box-fill"></i> </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-6 mt-4" data-aos="zoom-in" data-aos-delay="400">
-            <div class="member d-flex align-items-start">
-              <div class="pic"><img src="/assets/img/team/team-3.jpg" class="img-fluid" alt=""></div>
-              <div class="member-info">
-                <h4>SACHIN S</h4>
-                <span>Backend Developer</span>
-                <p>&nbsp;</p>
-                <div class="social">
-                  <a href=""><i class="ri-twitter-fill"></i></a>
-                  <a href=""><i class="ri-facebook-fill"></i></a>
-                  <a href=""><i class="ri-instagram-fill"></i></a>
-                  <a href=""> <i class="ri-linkedin-box-fill"></i> </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
         </div>
+        <% } %>
+  </div>
+</div>
 
-      </div>
-    </section><!-- End Team Section -->
-
-   
+<!-- end of card -->
 
     <!-- ======= Contact Section ======= -->
     <section id="contact" class="contact">
@@ -339,7 +245,7 @@
 
   <!-- Template Main JS File -->
   <script src="/assets/js/main.js"></script>
-
+  <script src="/assets/js/card.js"></script>
 </body>
 
 </html>

@@ -5,14 +5,45 @@ const APIFeatures = require('../utils/apiFeatures');
 const User = require('../models/userModel');
 const mongoose = require('mongoose');
 
-
+const technology = [
+    "HTML",
+    "CSS",
+    "JavaScript",
+    "React",
+    "Angular",
+    "Vue.js",
+    "Node.js",
+    "Express.js",
+    "MongoDB",
+    "SQL",
+    "Python",
+    "Ruby",
+    "PHP",
+    "Java",
+    "C#",
+    "Bootstrap",
+    "Sass",
+    "TypeScript",
+    "Redux",
+    "GraphQL",
+    "Webpack",
+    "Git",
+    "RESTful APIs",
+    "JSON",
+    "AJAX",
+    "Docker",
+    "AWS",
+    "Firebase",
+    "Heroku",
+  ];
+  
 // welcome page - /
 exports.welcome = catchAsyncError(async (req, res, next) => {
     res.status(200).render('welcome'); }
 );
 
 exports.home = catchAsyncError(async (req, res, next) => {
-    res.status(200).render('home', ); }
+    res.status(200).render('home'); }
 );
 
 //Get Projects - /projects
@@ -31,67 +62,70 @@ exports.getProjects = catchAsyncError(async (req, res, next)=>{
     })
 })
 
+//get my projects - /myprojects/:id
+exports.myProjects = catchAsyncError(async (req, res, next)=>{
+    const user = await User.findById(req.params.id).populate('projects');
+    res.status(200).render('myprojects',{user:user, projects:user.projects});
+});
+
+
 //Create Project - /project/new
 exports.newProject = catchAsyncError(async (req, res, next)=>{
-
-    let BASE_URL = process.env.BACKEND_URL;
-    if(process.env.NODE_ENV === "production"){
-        BASE_URL = `${req.protocol}://${req.get('host')}`
+    if (req.method === 'GET') 
+    {   
+        res.status(200).render('upload_project',{technology});
     }
-    
+    else
+    {
     if('projectImage' in req.files){
-    let url = `${BASE_URL}/uploads/projects/image/${req.files['projectImage'][0].filename}`;
+    let url = `/uploads/projects/image/${req.files['projectImage'][0].filename}`;
     req.body.projectImage = url;
     }
     else
     {
-        let url = `${BASE_URL}/uploads/projects/image/default.jpg`;
+        let url = `/uploads/projects/image/default.jpg`;
         req.body.projectImage = url;  
     }
 
     if('projectDocumentation' in req.files)
     {
-        let url = `${BASE_URL}/uploads/projects/documentation/${req.files['projectDocumentation'][0].filename}`;
+        let url = `/uploads/projects/documentation/${req.files['projectDocumentation'][0].filename}`;
         req.body.projectDocumentation = url;
     }
 
     if('projectFiles' in req.files)
     {
-        let url = `${BASE_URL}/uploads/projects/file/${req.files['projectFiles'][0].filename}`;
+        let url = `/uploads/projects/file/${req.files['projectFiles'][0].filename}`;
         req.body.projectFiles = url;
     }
 
     req.body.user = req.user.id;
     req.body.collegeName = req.user.collegeName;
+    const newArray = req.body.technologyUsed.slice(1);
+    req.body.technologyUsed = newArray;
     const project = await Project.create(req.body);
     
     let projects = req.user.projects;
     projects.push(project.id);
 
+    const allprojects = await Project.find();
     const user = await User.findByIdAndUpdate(req.user.id, {projects:projects} , {
         new: true,
         runValidators: true,
     })
-
-    res.status(201).json({
-        success: true,
-        project
-    })
+    res.status(201).render('home', {user, projects:allprojects })
+    }
 });
 
-//Get Single Project - /project/:id
+// Get Single Project - /project/get/:id
 exports.getSingleProject = catchAsyncError(async(req, res, next) => {
-    const project = await Project.findById(req.params.id).populate('comments.user','name email');
-
+    const project = await Project.findById(req.params.id).populate('user');
     if(!project) {
         return next(new ErrorHandler('Project not found', 400));
     }
-
-    res.status(201).json({
-        success: true,
-        project
-    })
-})
+    const user = await User.findById(project.user);
+    res.status(201).render('project_details',{project, user});
+});
 
 //Update Project - /project/:id
 exports.updateProject = catchAsyncError(async (req, res, next) => {
@@ -159,20 +193,15 @@ exports.deleteProject = catchAsyncError(async (req, res, next) =>{
 
     const id = new mongoose.Types.ObjectId(req.params.id);
 
-   let array = req.user.projects.filter(item => item.toString() !== id.toString());
-
-
-    console.log(array)
+    let array = req.user.projects.filter(item => item.toString() !== id.toString());
 
     await User.findByIdAndUpdate(req.user.id , { projects:array });
-      
-    res.status(200).json({
-        success: true,
-        message: "Project Deleted!"
-    })
-
+     
+    const user = await User.findById(req.user.id);
+    const projects = await Project.find();
+    
+    res.status(200).render('home',{user,projects})
 })
-
 
 //Create Comment - project/newcomment/:id
 exports.createComment = catchAsyncError(async (req, res, next) =>{
